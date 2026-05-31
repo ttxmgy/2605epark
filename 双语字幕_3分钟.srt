@@ -1,0 +1,125 @@
+1
+00:00:00,000 --> 00:00:04,000
+游乐园最佳路线规划平台（小程序）
+Park Route Planner (Mini Program)
+
+2
+00:00:04,000 --> 00:00:10,000
+实时排队与演出场次，生成当下最优下一步
+Live waits and show times, turned into the best next step
+
+3
+00:00:10,000 --> 00:00:15,000
+两种沉浸式引导：任务模式 / 副驾模式
+Two immersive modes: Mission / Copilot
+
+4
+00:00:15,000 --> 00:00:21,000
+支持实时改道、进度追踪、截图导入（预约/凭证）
+Real-time replanning, progress tracking, screenshot import
+
+5
+00:00:21,000 --> 00:00:30,000
+核心目标：让你现场只做决策，不做计算
+Goal: make decisions on-site, not calculations
+
+6
+00:00:30,000 --> 00:00:36,000
+点击“生成路线”，系统给出下一站
+Tap “Generate plan” to get your next stop
+
+7
+00:00:36,000 --> 00:00:43,000
+任务卡展示：步行 ETA、等待分钟、推荐理由
+Action card shows walk ETA, wait time, and reasons
+
+8
+00:00:43,000 --> 00:00:55,000
+这不是列表，而是可执行的“下一步动作”
+Not a list, but an actionable next step
+
+9
+00:00:55,000 --> 00:01:00,000
+当前为副驾模式：更自由、更少打扰
+Copilot mode: freer, less interruption
+
+10
+00:01:00,000 --> 00:01:07,000
+模拟排队暴涨：出现提示条（banner）
+Simulate a wait spike: a banner appears
+
+11
+00:01:07,000 --> 00:01:14,000
+提示“有更优路线”，点击查看备选
+Tap to see better alternatives
+
+12
+00:01:14,000 --> 00:01:20,000
+备选包含步行/等待/省时解释
+Alternatives explain walk, wait, and time saved
+
+13
+00:01:20,000 --> 00:01:26,000
+切换到任务模式：更省心、更确定
+Switch to Mission mode: more guided and certain
+
+14
+00:01:26,000 --> 00:01:33,000
+关键变化只在地图页弹窗提示
+Critical changes show as a modal on the map page only
+
+15
+00:01:33,000 --> 00:01:40,000
+弹窗给出两种选择：暂不调整 / 一键改道
+Two choices: keep / one-tap replan
+
+16
+00:01:40,000 --> 00:01:45,000
+推荐项显示节省时长与风险提示
+Recommendation shows saved time and risk flags
+
+17
+00:01:45,000 --> 00:01:52,000
+点击“一键改道”，下一站自动更新
+Tap “One-tap replan” to update your next stop
+
+18
+00:01:52,000 --> 00:02:05,000
+局部重规划：尽量保持路线稳定
+Local replanning keeps your plan stable
+
+19
+00:02:05,000 --> 00:02:10,000
+进度追踪：我到了
+Progress: Arrived
+
+20
+00:02:10,000 --> 00:02:15,000
+进度追踪：开始排队
+Progress: Queue started
+
+21
+00:02:15,000 --> 00:02:25,000
+进度追踪：已完成（用于战报/成就）
+Progress: Done (for recap and achievements)
+
+22
+00:02:25,000 --> 00:02:32,000
+导入截图：从官方 App 截图提取预约信息
+Import screenshots to extract reservations
+
+23
+00:02:32,000 --> 00:02:40,000
+解析结果包含日期、入园时间窗、状态等
+Parsed fields include date, time window, and status
+
+24
+00:02:40,000 --> 00:02:50,000
+合规路径：用户主动上传，不采集账号密码
+Compliant flow: user-provided, no password scraping
+
+25
+00:02:50,000 --> 00:03:00,000
+任务模式与副驾模式随时切换：只做决定，不做计算
+Switch anytime: decide on-site, no calculations
+
