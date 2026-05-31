@@ -112,6 +112,11 @@
         user-select: none;
       }
 
+      button.pill {
+        appearance: none;
+        color: inherit;
+      }
+
       .pill.brand {
         background: rgba(11, 92, 255, 0.22);
         border-color: rgba(11, 92, 255, 0.35);
@@ -230,6 +235,14 @@
         cursor: pointer;
       }
 
+      button.cta {
+        appearance: none;
+        background: transparent;
+        border: none;
+        color: inherit;
+        padding: 0;
+      }
+
       .card {
         position: absolute;
         left: 14px;
@@ -282,6 +295,11 @@
         font-size: 12px;
         font-weight: 650;
         user-select: none;
+      }
+
+      button.btn {
+        appearance: none;
+        color: inherit;
       }
 
       .btn.secondary {
@@ -459,7 +477,7 @@
         <div class="screen" id="screen">
           <div class="topbar">
             <div class="title">地图</div>
-            <div class="pill brand" id="modePill">COPILOT</div>
+            <button class="pill brand" id="modePill" type="button">COPILOT</button>
           </div>
 
           <div class="map">
@@ -498,7 +516,7 @@
 
           <div class="banner" id="banner">
             <div class="text" id="bannerText">发现更优路线</div>
-            <div class="cta" id="bannerCta">查看</div>
+            <button class="cta" id="bannerCta" type="button">查看</button>
           </div>
 
           <div class="toast" id="toast">已记录</div>
@@ -511,16 +529,16 @@
           <div class="card" id="card">
             <div class="row">
               <div class="h" id="cardTitle">未生成路线</div>
-              <div class="pill" id="refreshBtn">刷新</div>
+              <button class="pill" id="refreshBtn" type="button">刷新</button>
             </div>
             <div class="sub" id="cardSub">点击生成路线，获得下一步动作</div>
             <div class="actions">
-              <div class="btn" id="genBtn">生成路线</div>
-              <div class="btn secondary" id="replanBtn">模拟改道</div>
-              <div class="btn secondary" id="importBtn">导入截图</div>
-              <div class="btn secondary" id="arrivedBtn">我到了</div>
-              <div class="btn secondary" id="queueBtn">开始排队</div>
-              <div class="btn secondary" id="doneBtn">已完成</div>
+              <button class="btn" id="genBtn" type="button">生成路线</button>
+              <button class="btn secondary" id="replanBtn" type="button">模拟改道</button>
+              <button class="btn secondary" id="importBtn" type="button">导入截图</button>
+              <button class="btn secondary" id="arrivedBtn" type="button">我到了</button>
+              <button class="btn secondary" id="queueBtn" type="button">开始排队</button>
+              <button class="btn secondary" id="doneBtn" type="button">已完成</button>
             </div>
           </div>
 
@@ -529,8 +547,8 @@
               <div class="mh">路线需要调整</div>
               <div class="mb" id="modalText">切换到更省时方案</div>
               <div class="m-actions">
-                <div class="btn secondary" id="laterBtn">暂不调整</div>
-                <div class="btn" id="applyBtn">一键改道</div>
+                <button class="btn secondary" id="laterBtn" type="button">暂不调整</button>
+                <button class="btn" id="applyBtn" type="button">一键改道</button>
               </div>
               <div class="list" id="altList"></div>
             </div>
@@ -546,12 +564,12 @@
         </p>
         <div class="controls">
           <div class="row">
-            <div class="btn" id="autoBtn">自动演示（3分钟）</div>
-            <div class="btn secondary" id="resetBtn">重置</div>
+            <button class="btn" id="autoBtn" type="button">自动演示（3分钟）</button>
+            <button class="btn secondary" id="resetBtn" type="button">重置</button>
           </div>
           <div class="row">
-            <div class="btn secondary" id="stepBtn">下一步</div>
-            <div class="btn secondary" id="toggleModeBtn">切换模式</div>
+            <button class="btn secondary" id="stepBtn" type="button">下一步</button>
+            <button class="btn secondary" id="toggleModeBtn" type="button">切换模式</button>
           </div>
           <div class="row">
             <span class="kbd">提示</span>
@@ -798,4 +816,3 @@
     </script>
   </body>
 </html>
-
