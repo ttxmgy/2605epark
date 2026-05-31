@@ -32,4 +32,8 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ProgressEventDto.prototype, "poiId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], ProgressEventDto.prototype, "payload", void 0);
 //# sourceMappingURL=progress.dto.js.map

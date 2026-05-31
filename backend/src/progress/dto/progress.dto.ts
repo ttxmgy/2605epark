@@ -12,6 +12,6 @@ export class ProgressEventDto {
   @IsString()
   poiId?: string;
 
+  @IsOptional()
   payload?: unknown;
 }
-
