@@ -1,0 +1,10 @@
+{
+  "pages": ["pages/map/map"],
+  "window": {
+    "navigationBarTitleText": "路线引导",
+    "navigationBarBackgroundColor": "#0b5cff",
+    "navigationBarTextStyle": "white",
+    "backgroundTextStyle": "light"
+  }
+}
+

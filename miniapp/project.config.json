@@ -1,0 +1,10 @@
+{
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "libVersion": "3.4.0",
+  "projectname": "park-route",
+  "setting": {
+    "urlCheck": false
+  }
+}
+

@@ -1,0 +1,193 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum PoiType {
+  ATTRACTION
+  SHOW
+  RESTAURANT
+  ACTIVITY
+  SERVICE
+  ENTRY
+  LANDMARK
+}
+
+enum PoiStatus {
+  OPEN
+  TEMP_CLOSED
+  DOWN
+  UNKNOWN
+}
+
+enum GuideMode {
+  MISSION
+  COPILOT
+}
+
+enum ReservationStatus {
+  VALID
+  REDEEMED
+  EXPIRED
+  UNKNOWN
+}
+
+model User {
+  id           String        @id @default(cuid())
+  phone        String?       @unique
+  email        String?       @unique
+  passwordHash String
+  nickname     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  profile      UserProfile?
+  plans        Plan[]
+  events       ProgressEvent[]
+  imports      ImportedArtifact[]
+  reservations UserReservation[]
+}
+
+model UserProfile {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode      GuideMode @default(COPILOT)
+  tags      Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Park {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  pois      Poi[]
+  hours     ParkHours[]
+  plans     Plan[]
+}
+
+model ParkHours {
+  id        String   @id @default(cuid())
+  parkId    String
+  park      Park     @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  date      String
+  venueName String
+  openTime  String
+  closeTime String
+  createdAt DateTime @default(now())
+
+  @@index([parkId, date])
+}
+
+model Poi {
+  id        String    @id @default(cuid())
+  parkId    String
+  park      Park      @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  type      PoiType
+  name      String
+  zone      String?
+  lat       Float
+  lng       Float
+  tags      Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  live      PoiLive[]
+  shows     ShowSession[]
+  events    ProgressEvent[]
+
+  @@index([parkId, type])
+  @@index([parkId, zone])
+  @@unique([parkId, type, name])
+}
+
+model PoiLive {
+  id         String    @id @default(cuid())
+  poiId      String
+  poi        Poi       @relation(fields: [poiId], references: [id], onDelete: Cascade)
+  capturedAt DateTime  @default(now())
+  status     PoiStatus @default(UNKNOWN)
+  waitMin    Int?
+
+  @@index([poiId, capturedAt])
+}
+
+model ShowSession {
+  id        String   @id @default(cuid())
+  poiId     String
+  poi       Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  endAt     DateTime?
+  status    String?
+  createdAt DateTime @default(now())
+
+  @@index([poiId, startAt])
+}
+
+model Plan {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parkId    String
+  park      Park      @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  mode      GuideMode @default(COPILOT)
+  template  String?
+  data      Json
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  events    ProgressEvent[]
+
+  @@index([userId, createdAt])
+}
+
+model ProgressEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String?
+  plan      Plan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
+  poiId     String?
+  poi       Poi?     @relation(fields: [poiId], references: [id], onDelete: SetNull)
+  type      String
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([planId, createdAt])
+}
+
+model ImportedArtifact {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  captureTime String?
+  rawPath     String?
+  parsed      Json
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model UserReservation {
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      String?
+  visitDate     String
+  timeWindow    String?
+  status        ReservationStatus @default(UNKNOWN)
+  guestName     String?
+  guestCount    Int?
+  voucherHash   String?           @unique
+  voucherLast4  String?
+  sourceImportId String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([userId, visitDate])
+}

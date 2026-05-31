@@ -1,0 +1,57 @@
+<view class="page">
+  <map
+    id="map"
+    class="map"
+    longitude="{{center.lng}}"
+    latitude="{{center.lat}}"
+    scale="16"
+    markers="{{markers}}"
+    show-location
+  />
+
+  <view wx:if="{{banner.show}}" class="banner" bindtap="openAlternatives">
+    <text class="banner-text">{{banner.text}}</text>
+  </view>
+
+  <view class="card">
+    <view class="card-row">
+      <text class="card-title">{{nextAction.title || "未生成路线"}}</text>
+      <view class="mode-pill" bindtap="toggleMode">{{mode}}</view>
+    </view>
+    <view class="card-sub" wx:if="{{nextAction.title}}">
+      <text>步行约 {{nextAction.walk_eta_min}} 分钟</text>
+      <text wx:if="{{nextAction.wait_min !== null}}"> · 等待 {{nextAction.wait_min}} 分钟</text>
+    </view>
+
+    <view class="card-actions">
+      <view class="btn" bindtap="generatePlan">生成路线</view>
+      <view class="btn btn-secondary" bindtap="refreshLive">刷新</view>
+      <view class="btn btn-secondary" bindtap="importScreenshot">导入截图</view>
+    </view>
+
+    <view class="card-actions" wx:if="{{nextAction.poi_id}}">
+      <view class="btn btn-secondary" bindtap="sendProgressArrived">我到了</view>
+      <view class="btn btn-secondary" bindtap="sendProgressQueue">开始排队</view>
+      <view class="btn btn-secondary" bindtap="sendProgressDone">已完成</view>
+      <view class="btn btn-secondary" bindtap="triggerReplan">模拟改道</view>
+    </view>
+  </view>
+
+  <view wx:if="{{modal.show}}" class="modal-mask">
+    <view class="modal">
+      <view class="modal-title">路线需要调整</view>
+      <view class="modal-body">{{modal.text}}</view>
+      <view class="modal-actions">
+        <view class="btn btn-secondary" bindtap="closeModal">暂不调整</view>
+        <view class="btn" bindtap="applyBestAlternative">一键改道</view>
+      </view>
+      <view class="alt-list" wx:if="{{alternatives.length}}">
+        <view class="alt-item" wx:for="{{alternatives}}" wx:key="poi_id" bindtap="pickAlternative" data-poiid="{{item.poi_id}}">
+          <view class="alt-title">{{item.title}}</view>
+          <view class="alt-sub">{{item.explain[0]}} · {{item.explain[1]}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
