@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>游乐园路线规划 Demo</title>
+    <style>
+      :root {
+        --bg: #070a12;
+        --panel: rgba(10, 10, 12, 0.86);
+        --stroke: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.7);
+        --brand: #0b5cff;
+        --brand2: #2c86ff;
+        --danger: #ff3b30;
+        --ok: #34c759;
+        --shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+        --radius2: 22px;
+        --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font);
+        background: radial-gradient(1200px 600px at 50% 0%, rgba(11, 92, 255, 0.22), transparent),
+          linear-gradient(180deg, #05060c 0%, #070a12 100%);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .layout {
+        width: min(1100px, 100%);
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        gap: 22px;
+        align-items: start;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .phone {
+        width: 390px;
+        height: 844px;
+        border-radius: 44px;
+        background: #000;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .notch {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 34px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        z-index: 10;
+      }
+
+      .screen {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: radial-gradient(900px 500px at 70% 10%, rgba(44, 134, 255, 0.2), transparent),
+          linear-gradient(180deg, #05060c 0%, #070a12 100%);
+      }
+
+      .topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 54px 18px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 6;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+      }
+
+      .title {
+        font-weight: 650;
+        letter-spacing: 0.2px;
+      }
+
+      .pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .pill.brand {
+        background: rgba(11, 92, 255, 0.22);
+        border-color: rgba(11, 92, 255, 0.35);
+      }
+
+      .map {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(700px 380px at 30% 30%, rgba(255, 255, 255, 0.04), transparent),
+          radial-gradient(600px 360px at 70% 60%, rgba(255, 255, 255, 0.03), transparent),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      }
+
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 38px 38px;
+        opacity: 0.18;
+        mask-image: radial-gradient(closest-side, rgba(0, 0, 0, 0.9), transparent);
+      }
+
+      .route {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 260ms ease;
+      }
+
+      .route.on {
+        opacity: 1;
+      }
+
+      .route svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .marker {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        border: 2px solid rgba(0, 0, 0, 0.65);
+        transform: translate(-50%, -50%);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+      }
+
+      .marker.attraction {
+        background: rgba(11, 92, 255, 0.95);
+      }
+
+      .marker.show {
+        background: rgba(255, 166, 0, 0.95);
+      }
+
+      .marker.restaurant {
+        background: rgba(52, 199, 89, 0.95);
+      }
+
+      .marker .badge {
+        position: absolute;
+        top: -10px;
+        right: -12px;
+        min-width: 22px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 10px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .banner {
+        position: absolute;
+        top: 114px;
+        left: 14px;
+        right: 14px;
+        z-index: 7;
+        padding: 12px 12px;
+        border-radius: 16px;
+        background: rgba(11, 92, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: opacity 220ms ease, transform 220ms ease;
+      }
+
+      .banner.on {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .banner .text {
+        font-size: 13px;
+        font-weight: 560;
+        line-height: 1.25;
+      }
+
+      .banner .cta {
+        font-size: 12px;
+        opacity: 0.92;
+        white-space: nowrap;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .card {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 18px;
+        z-index: 8;
+        background: var(--panel);
+        border: 1px solid var(--stroke);
+        border-radius: var(--radius2);
+        padding: 14px 14px 12px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+
+      .card .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card .h {
+        font-size: 15px;
+        font-weight: 700;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .card .sub {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .actions {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(11, 92, 255, 0.95);
+        border: 1px solid rgba(11, 92, 255, 0.6);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 650;
+        user-select: none;
+      }
+
+      .btn.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.12);
+        font-weight: 600;
+      }
+
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 132px;
+        transform: translateX(-50%);
+        z-index: 20;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 160ms ease;
+      }
+
+      .toast.on {
+        opacity: 1;
+      }
+
+      .modal-mask {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        background: rgba(0, 0, 0, 0.56);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+      }
+
+      .modal-mask.on {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 350px;
+        background: #0f1116;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        padding: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      .modal .mh {
+        font-weight: 750;
+        font-size: 14px;
+      }
+
+      .modal .mb {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .modal .m-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .list {
+        margin-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 10px;
+        display: grid;
+        gap: 10px;
+        max-height: 240px;
+        overflow: auto;
+      }
+
+      .item {
+        padding: 10px 10px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+      }
+
+      .item .t {
+        font-weight: 700;
+        font-size: 13px;
+      }
+
+      .item .d {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .subtitle {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 104px;
+        z-index: 25;
+        padding: 10px 12px;
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+      }
+
+      .subtitle .cn {
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .subtitle .en {
+        margin-top: 4px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.78);
+        line-height: 1.25;
+      }
+
+      .panel {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.25);
+        padding: 16px 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .controls {
+        margin-top: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .controls .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <div class="phone" aria-label="mobile-demo">
+        <div class="notch"></div>
+        <div class="screen" id="screen">
+          <div class="topbar">
+            <div class="title">地图</div>
+            <div class="pill brand" id="modePill">COPILOT</div>
+          </div>
+
+          <div class="map">
+            <div class="grid"></div>
+            <div class="route" id="route">
+              <svg viewBox="0 0 390 844" fill="none">
+                <path
+                  id="routePath"
+                  d="M 110 620 C 120 520, 180 480, 220 420 C 256 364, 250 320, 262 262"
+                  stroke="rgba(11, 92, 255, 0.92)"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M 110 620 C 120 520, 180 480, 220 420 C 256 364, 250 320, 262 262"
+                  stroke="rgba(255, 255, 255, 0.35)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+
+            <div class="marker attraction" style="left: 110px; top: 620px" data-id="A">
+              <div class="badge" id="badgeA"></div>
+            </div>
+            <div class="marker attraction" style="left: 220px; top: 420px" data-id="B">
+              <div class="badge" id="badgeB"></div>
+            </div>
+            <div class="marker show" style="left: 262px; top: 262px" data-id="S">
+              <div class="badge">15:00</div>
+            </div>
+            <div class="marker restaurant" style="left: 160px; top: 350px" data-id="R">
+              <div class="badge" id="badgeR"></div>
+            </div>
+          </div>
+
+          <div class="banner" id="banner">
+            <div class="text" id="bannerText">发现更优路线</div>
+            <div class="cta" id="bannerCta">查看</div>
+          </div>
+
+          <div class="toast" id="toast">已记录</div>
+
+          <div class="subtitle" id="subtitle">
+            <div class="cn" id="subCn">游乐园最佳路线规划平台（小程序）</div>
+            <div class="en" id="subEn">Park Route Planner (Mini Program)</div>
+          </div>
+
+          <div class="card" id="card">
+            <div class="row">
+              <div class="h" id="cardTitle">未生成路线</div>
+              <div class="pill" id="refreshBtn">刷新</div>
+            </div>
+            <div class="sub" id="cardSub">点击生成路线，获得下一步动作</div>
+            <div class="actions">
+              <div class="btn" id="genBtn">生成路线</div>
+              <div class="btn secondary" id="replanBtn">模拟改道</div>
+              <div class="btn secondary" id="importBtn">导入截图</div>
+              <div class="btn secondary" id="arrivedBtn">我到了</div>
+              <div class="btn secondary" id="queueBtn">开始排队</div>
+              <div class="btn secondary" id="doneBtn">已完成</div>
+            </div>
+          </div>
+
+          <div class="modal-mask" id="modalMask" role="dialog" aria-modal="true">
+            <div class="modal">
+              <div class="mh">路线需要调整</div>
+              <div class="mb" id="modalText">切换到更省时方案</div>
+              <div class="m-actions">
+                <div class="btn secondary" id="laterBtn">暂不调整</div>
+                <div class="btn" id="applyBtn">一键改道</div>
+              </div>
+              <div class="list" id="altList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>HTML 模拟运行演示</h2>
+        <p>
+          这是一个纯 HTML 的手机端演示模拟：包含地图页沉浸式任务卡、两种模式切换（任务模式/副驾模式）、实时改道提示（banner/modal）、
+          进度追踪与截图导入的交互呈现。点击右侧按钮可自动跑一遍 3 分钟演示节奏。
+        </p>
+        <div class="controls">
+          <div class="row">
+            <div class="btn" id="autoBtn">自动演示（3分钟）</div>
+            <div class="btn secondary" id="resetBtn">重置</div>
+          </div>
+          <div class="row">
+            <div class="btn secondary" id="stepBtn">下一步</div>
+            <div class="btn secondary" id="toggleModeBtn">切换模式</div>
+          </div>
+          <div class="row">
+            <span class="kbd">提示</span>
+            <p>如需接真实后端，可在 app.js 中将 dataSource 改为 backend。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        mode: "COPILOT",
+        step: 0,
+        running: false,
+        timer: null,
+        dataSource: "mock",
+        plan: {
+          next: { id: "B", title: "霸天虎过山车", walk: 6, wait: 35 },
+          alt: [{ id: "A", title: "哈利·波特与禁忌之旅", walk: 4, wait: 20, save: 18 }],
+        },
+      };
+
+      const el = {
+        modePill: document.getElementById("modePill"),
+        banner: document.getElementById("banner"),
+        bannerText: document.getElementById("bannerText"),
+        bannerCta: document.getElementById("bannerCta"),
+        route: document.getElementById("route"),
+        cardTitle: document.getElementById("cardTitle"),
+        cardSub: document.getElementById("cardSub"),
+        toast: document.getElementById("toast"),
+        subCn: document.getElementById("subCn"),
+        subEn: document.getElementById("subEn"),
+        modalMask: document.getElementById("modalMask"),
+        modalText: document.getElementById("modalText"),
+        altList: document.getElementById("altList"),
+        badgeA: document.getElementById("badgeA"),
+        badgeB: document.getElementById("badgeB"),
+        badgeR: document.getElementById("badgeR"),
+      };
+
+      function setSubtitle(cn, en) {
+        el.subCn.textContent = cn;
+        el.subEn.textContent = en;
+      }
+
+      function toast(text) {
+        el.toast.textContent = text;
+        el.toast.classList.add("on");
+        setTimeout(() => el.toast.classList.remove("on"), 900);
+      }
+
+      function setMode(mode) {
+        state.mode = mode;
+        el.modePill.textContent = mode;
+        el.modePill.classList.toggle("brand", mode === "MISSION");
+      }
+
+      function showBanner(text) {
+        el.bannerText.textContent = text;
+        el.banner.classList.add("on");
+      }
+
+      function hideBanner() {
+        el.banner.classList.remove("on");
+      }
+
+      function showModal(text, alts) {
+        el.modalText.textContent = text;
+        el.altList.innerHTML = "";
+        (alts || []).forEach((a) => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.dataset.poi = a.id;
+          div.innerHTML = `<div class="t">${a.title}</div><div class="d">步行约 ${a.walk} 分钟 · 等待 ${a.wait} 分钟</div>`;
+          div.addEventListener("click", () => applyAlternative(a.id));
+          el.altList.appendChild(div);
+        });
+        el.modalMask.classList.add("on");
+      }
+
+      function hideModal() {
+        el.modalMask.classList.remove("on");
+      }
+
+      function setNext(next) {
+        el.cardTitle.textContent = next.title;
+        el.cardSub.textContent = `步行约 ${next.walk} 分钟 · 等待 ${next.wait} 分钟`;
+        el.route.classList.add("on");
+      }
+
+      function applyAlternative(id) {
+        const found = state.plan.alt.find((a) => a.id === id);
+        if (!found) return;
+        setNext({ id: found.id, title: found.title, walk: found.walk, wait: found.wait });
+        hideModal();
+        hideBanner();
+        toast("已改道");
+        setSubtitle("已为你切换到更省时的下一站", "Switched to a faster next stop");
+      }
+
+      function resetUI() {
+        hideBanner();
+        hideModal();
+        el.route.classList.remove("on");
+        el.cardTitle.textContent = "未生成路线";
+        el.cardSub.textContent = "点击生成路线，获得下一步动作";
+        el.badgeA.textContent = "";
+        el.badgeB.textContent = "";
+        el.badgeR.textContent = "";
+        setMode("COPILOT");
+        setSubtitle("游乐园最佳路线规划平台（小程序）", "Park Route Planner (Mini Program)");
+      }
+
+      function stepOnce() {
+        const s = state.step;
+        if (s === 0) {
+          resetUI();
+          setSubtitle("欢迎进入地图页：任务卡常驻展示下一步动作", "Map cockpit: a persistent next-action card");
+        } else if (s === 1) {
+          el.badgeB.textContent = "35";
+          el.badgeA.textContent = "70";
+          el.badgeR.textContent = "60";
+          setSubtitle("实时数据刷新：排队时长与演出场次同步更新", "Live refresh: waits and show sessions update");
+        } else if (s === 2) {
+          setNext(state.plan.next);
+          setSubtitle("生成路线：系统直接给出下一站与可解释信息", "Generate plan: the next stop with explanations");
+        } else if (s === 3) {
+          setMode("COPILOT");
+          showBanner("发现更省时路线：哈利·波特与禁忌之旅（省 18 分钟）");
+          setSubtitle("副驾模式：不打断，用提示条提醒更优方案", "Copilot: a banner suggests better options");
+        } else if (s === 4) {
+          showModal("点开查看备选，并可一键切换", state.plan.alt);
+          setSubtitle("备选包含步行/等待/省时解释", "Alternatives explain walk, wait, and time saved");
+        } else if (s === 5) {
+          hideModal();
+          hideBanner();
+          setMode("MISSION");
+          setSubtitle("切换任务模式：关键变化只在地图页弹窗提示", "Mission mode: modal prompts on map page only");
+        } else if (s === 6) {
+          showModal("路线需要调整：建议一键改道到更省时项目", state.plan.alt.slice(0, 1));
+          setSubtitle("任务模式弹窗：继续 / 一键改道（更确定）", "Mission modal: keep or one-tap replan");
+        } else if (s === 7) {
+          applyAlternative("A");
+        } else if (s === 8) {
+          toast("已记录：到达");
+          setSubtitle("进度追踪：我到了", "Progress: Arrived");
+        } else if (s === 9) {
+          toast("已记录：开始排队");
+          setSubtitle("进度追踪：开始排队", "Progress: Queue started");
+        } else if (s === 10) {
+          toast("已记录：已完成");
+          setSubtitle("进度追踪：已完成（用于战报/成就）", "Progress: Done (for recap & achievements)");
+        } else if (s === 11) {
+          toast("导入成功");
+          setSubtitle("导入截图：解析预约记录/凭证，形成硬约束", "Import screenshots to extract reservations");
+        } else if (s === 12) {
+          setSubtitle("结尾：任务模式与副驾模式随时切换", "Outro: switch Mission/Copilot anytime");
+        } else {
+          state.running = false;
+          state.step = 0;
+          return;
+        }
+        state.step += 1;
+      }
+
+      function runAuto() {
+        if (state.running) return;
+        state.running = true;
+        state.step = 0;
+        const schedule = [
+          1000, 6000, 10000, 15000, 21000, 26000, 31000, 37000, 44000, 50000, 56000, 68000, 80000,
+        ];
+        stepOnce();
+        let i = 1;
+        function tick() {
+          if (!state.running) return;
+          if (i >= schedule.length) {
+            state.running = false;
+            return;
+          }
+          state.timer = setTimeout(() => {
+            stepOnce();
+            i += 1;
+            tick();
+          }, schedule[i] - schedule[i - 1]);
+        }
+        tick();
+      }
+
+      document.getElementById("modePill").addEventListener("click", () => {
+        setMode(state.mode === "MISSION" ? "COPILOT" : "MISSION");
+        toast("已切换模式");
+      });
+      document.getElementById("toggleModeBtn").addEventListener("click", () => {
+        setMode(state.mode === "MISSION" ? "COPILOT" : "MISSION");
+        toast("已切换模式");
+      });
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        state.running = false;
+        clearTimeout(state.timer);
+        state.step = 0;
+        resetUI();
+      });
+      document.getElementById("stepBtn").addEventListener("click", () => stepOnce());
+      document.getElementById("autoBtn").addEventListener("click", () => runAuto());
+
+      document.getElementById("genBtn").addEventListener("click", () => {
+        state.step = Math.max(state.step, 2);
+        stepOnce();
+      });
+      document.getElementById("replanBtn").addEventListener("click", () => {
+        if (state.mode === "MISSION") {
+          showModal("路线需要调整：建议一键改道到更省时项目", state.plan.alt.slice(0, 1));
+          return;
+        }
+        showBanner("发现更省时路线：哈利·波特与禁忌之旅（省 18 分钟）");
+      });
+      document.getElementById("importBtn").addEventListener("click", () => {
+        toast("导入成功");
+        setSubtitle("导入截图：解析出日期、入园窗口、状态等", "Imported: parsed date, time window, and status");
+      });
+      document.getElementById("arrivedBtn").addEventListener("click", () => toast("已记录：到达"));
+      document.getElementById("queueBtn").addEventListener("click", () => toast("已记录：开始排队"));
+      document.getElementById("doneBtn").addEventListener("click", () => toast("已记录：已完成"));
+
+      document.getElementById("bannerCta").addEventListener("click", () => {
+        showModal("点开查看备选，并可一键切换", state.plan.alt);
+      });
+      document.getElementById("bannerText").addEventListener("click", () => {
+        showModal("点开查看备选，并可一键切换", state.plan.alt);
+      });
+      document.getElementById("laterBtn").addEventListener("click", () => hideModal());
+      document.getElementById("applyBtn").addEventListener("click", () => applyAlternative("A"));
+      document.getElementById("refreshBtn").addEventListener("click", () => {
+        el.badgeB.textContent = el.badgeB.textContent ? "" : "35";
+        toast("已刷新");
+      });
+      el.modalMask.addEventListener("click", (e) => {
+        if (e.target === el.modalMask) hideModal();
+      });
+
+      resetUI();
+    </script>
+  </body>
+</html>
+
